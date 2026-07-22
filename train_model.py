@@ -1,37 +1,102 @@
 import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import MultinomialNB
 import joblib
+import os
 
-# Read the dataset
-data = pd.read_csv("dataset/spam.csv", encoding="latin-1")
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score
 
-# Keep only the required columns
-data = data[['v1', 'v2']]
-data.columns = ['label', 'message']
 
-# Convert labels into numbers
-data['label'] = data['label'].map({'ham': 0, 'spam': 1})
+# Dataset load
+data = pd.read_csv("spam.csv")
 
-# Convert messages into numerical values
-vectorizer = CountVectorizer()
-X = vectorizer.fit_transform(data['message'])
 
-# Target values
-y = data['label']
+# Dataset columns check
+print(data.head())
 
-# Split the dataset into training and testing data
+
+# Select columns
+# spam.csv lo columns: v1 = label, v2 = message ani assume chestunnam
+
+data = data[['v1','v2']]
+
+
+# Labels convert
+data['v1'] = data['v1'].map({
+    'ham':0,
+    'spam':1
+})
+
+
+# Input and output
+X = data['v2']
+y = data['v1']
+
+
+# Split data
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
 )
 
-# Train the model
+
+
+# TF-IDF Vectorization
+vectorizer = TfidfVectorizer(
+    stop_words='english'
+)
+
+
+X_train_vector = vectorizer.fit_transform(X_train)
+
+X_test_vector = vectorizer.transform(X_test)
+
+
+
+# Model training
 model = MultinomialNB()
-model.fit(X_train, y_train)
 
-# Save the model
-joblib.dump(model, "model/spam_model.pkl")
-joblib.dump(vectorizer, "model/vectorizer.pkl")
+model.fit(
+    X_train_vector,
+    y_train
+)
 
-print("Model trained successfully!")
+
+
+# Accuracy
+prediction = model.predict(X_test_vector)
+
+accuracy = accuracy_score(
+    y_test,
+    prediction
+)
+
+
+print("Model Accuracy:", accuracy*100)
+
+
+
+# Create model folder
+if not os.path.exists("model"):
+    os.makedirs("model")
+
+
+
+# Save model
+joblib.dump(
+    model,
+    "model/spam_model.pkl"
+)
+
+
+# Save vectorizer
+joblib.dump(
+    vectorizer,
+    "model/vectorizer.pkl"
+)
+
+
+print("Model and Vectorizer saved successfully")

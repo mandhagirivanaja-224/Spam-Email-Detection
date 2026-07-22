@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>📊 Spam Email Dashboard</h1>
+
+    <div class="card">
+        <h2>Total Predictions</h2>
+        <h1>{{ total }}</h1>
+    </div>
+
+    <br>
+
+    <div class="card">
+        <h2>🚫 Spam Emails</h2>
+        <h1>{{ spam }}</h1>
+    </div>
+
+    <br>
+
+    <div class="card">
+        <h2>✅ Ham Emails</h2>
+        <h1>{{ ham }}</h1>
+    </div>
+
+    <br><br>
+
+    <h2 style="text-align:center;">Spam vs Ham Analysis</h2>
+
+    <div style="width:400px; margin:auto;">
+        <canvas id="pieChart"></canvas>
+    </div>
+
+    <script>
+    const ctx = document.getElementById('pieChart');
+
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Spam', 'Ham'],
+            datasets: [{
+                data: [{{ spam }}, {{ ham }}],
+                backgroundColor: [
+                    '#ff4d4d',
+                    '#4CAF50'
+                ]
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+    </script>
+
+    <br><br>
+
+    <h2>Recent Predictions</h2>
+
+    <table border="1" width="100%">
+        <tr>
+            <th>Email</th>
+            <th>Result</th>
+            <th>Confidence</th>
+            <th>Date</th>
+        </tr>
+
+        {% for row in recent %}
+        <tr>
+            <td>{{ row[0][:40] }}...</td>
+            <td>{{ row[1] }}</td>
+            <td>{{ row[2] }}%</td>
+            <td>{{ row[3] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <br><br>
+
+    <a href="/">
+        <button>🏠 Home</button>
+    </a>
+
+    <a href="/history">
+        <button>📜 History</button>
+    </a>
+
+</div>
+
+</body>
+</html>
